@@ -62,13 +62,56 @@ App.Views.ProjectRow = Backbone.View.extend({
   className: 'project',
 
   initialize: function() {
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'renderUpdate', 'update');
   },  
 
   render: function() {
+    this.delegateEvents({
+          'click': 'renderUpdate'
+    });
     var p = this.options.model;
-    $(this.el).html('<div> start at : '+p.get('start')+'</div><div> end at : '+p.get('end')+'</div><div>cost : '+p.get('cost')+'</div>');
+    $(this.el).html('<div> name : '+p.get('name')+'<div> start at : '+p.get('start')+'</div><div> end at : '+p.get('end')+'</div><div>cost : '+p.get('cost')+'</div>');
     return this;
+  },
+
+  renderUpdate: function() {
+      this.delegateEvents({
+          'submit form': 'update'
+      });
+      var p = this.options.model;
+      var tpl = '<form><p>' +
+        '<label for="name">name</label>' +
+        '<input name="name" value="'+p.get('name')+'"/>' +
+      '<p>' +
+      '<p>' +
+        '<label for="start">start at</label>' +
+        '<input name="start" value="'+p.get('start')+'"/>' +
+      '<p>' +
+      '<p>' +
+        '<label for="end at">end at</label>' +
+        '<input name="end" value="'+p.get('end')+'"/>' +
+      '</p>' +
+      '<p>' +
+        '<label for="end at">dev nb</label>' +
+        '<input name="cost" value="'+p.get('cost')+'"/>' +
+      '</p>' +
+      '<p>' +
+        '<input type="submit" value="save"/>' +
+      '</p></form>'
+      $(this.el).html(tpl);
+
+      return this;
+  },
+
+  update: function(event) {
+      event.preventDefault();
+      this.options.model.set({
+        name: $(this.el).find('input[name="name"]').val(),
+        start: $(this.el).find('input[name="start"]').val(),
+        end: $(this.el).find('input[name="end"]').val(),
+        cost: $(this.el).find('input[name="cost"]').val()
+      });
+      this.render();
   }
 
 });
@@ -90,6 +133,10 @@ App.Views.ProjectForm = Backbone.View.extend({
   render: function() {
       var p = this.options.model;
       var tpl ='<p>' +
+        '<label for="name">name</label>' +
+        '<input name="name" value="'+p.get('name')+'"/>' +
+      '</p>' +
+      '<p>' +
         '<label for="start">start at</label>' +
         '<input name="start" value="'+p.get('start')+'"/>' +
       '<p>' +
@@ -112,6 +159,7 @@ App.Views.ProjectForm = Backbone.View.extend({
   create: function(event) {
       event.preventDefault();
       this.options.model.set({
+        name: $(this.el).find('input[name="name"]').val(),
         start: $(this.el).find('input[name="start"]').val(),
         end: $(this.el).find('input[name="end"]').val(),
         cost: $(this.el).find('input[name="cost"]').val()
@@ -152,7 +200,7 @@ App.Views.Graph = Backbone.View.extend({
   tagName: 'div',
 
   initialize: function() {
-    _.bindAll(this, 'render', 'addProject');
+    _.bindAll(this, 'render', 'addProject', 'changeProject');
     this.options.collection.bind('add', this.addProject);
     this.data = [];
     /* Sizing and scales. */
@@ -198,7 +246,17 @@ App.Views.Graph = Backbone.View.extend({
   },
 
   addProject: function(project) {
+      project.bind('change', this.changeProject);
       this.data.push(project.toData());
+      this.render();
+  },
+
+  changeProject: function() {
+      this.data.splice(0, this.data.length);
+      var self = this;
+      this.options.collection.each( function(project) {
+          self.data.push(project.toData());
+      });
       this.render();
   },
 
