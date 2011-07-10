@@ -8,15 +8,24 @@ var App = {
     Models: {},
     Views: {}
 };
-  
+
+Backbone.Model.prototype.idAttribute = "_id"; 
 
 App.Models.Project = Backbone.Model.extend({
+
+    url: function() {
+        var base = 'projects';
+        return base + (this.isNew() ? '' : ('/' + this.id));
+    },
+
     defaults: {
         name: 'name',
         start: 0,
         end: 0,
-        cost: 0
+        cost: 0,
+        visible: true
     },
+    
 
     toData: function() {
         var data = [];
@@ -29,6 +38,7 @@ App.Models.Project = Backbone.Model.extend({
 });
 
 App.Collections.Project = Backbone.Collection.extend({
+    url: 'projects',
     model: App.Models.Project
 });
 
@@ -40,6 +50,7 @@ App.Views.ProjectList = Backbone.View.extend({
   initialize: function() {
       _.bindAll(this, 'render', 'addProject');
       this.options.collection.bind('add', this.addProject);
+      this.options.collection.bind('reset', this.render);
   },  
 
   render: function() {
@@ -62,15 +73,19 @@ App.Views.ProjectRow = Backbone.View.extend({
   className: 'project',
 
   initialize: function() {
-    _.bindAll(this, 'render', 'renderUpdate', 'update');
+    _.bindAll(this, 'render', 'renderUpdate', 'update', 'destroy');
+    this.options.model.bind('change', this.render);
+    this.options.model.bind('destroy', this.destroy);
   },  
 
   render: function() {
+      console.log('me')
     this.delegateEvents({
-          'click': 'renderUpdate'
+         'click a.remove': 'remove',
+         'click div': 'renderUpdate'
     });
     var p = this.options.model;
-    $(this.el).html('<div> name : '+p.get('name')+'<div> start at : '+p.get('start')+'</div><div> end at : '+p.get('end')+'</div><div>cost : '+p.get('cost')+'</div>');
+    $(this.el).html('<div> name : '+p.get('name')+'<div> start at : '+p.get('start')+'</div><div> end at : '+p.get('end')+'</div><div>cost : '+p.get('cost')+'</div><a href="#" class="remove">remove</a>');
     return this;
   },
 
@@ -96,6 +111,10 @@ App.Views.ProjectRow = Backbone.View.extend({
         '<input name="cost" value="'+p.get('cost')+'"/>' +
       '</p>' +
       '<p>' +
+        '<label for="visible">visible</label>' +
+        '<input type="checkbox" name="visible"' + (p.get('visible') ? ' checked' : '') +'/>' +
+      '</p>' +
+      '<p>' +
         '<input type="submit" value="save"/>' +
       '</p></form>'
       $(this.el).html(tpl);
@@ -105,13 +124,24 @@ App.Views.ProjectRow = Backbone.View.extend({
 
   update: function(event) {
       event.preventDefault();
-      this.options.model.set({
+      this.options.model.save({
         name: $(this.el).find('input[name="name"]').val(),
         start: $(this.el).find('input[name="start"]').val(),
         end: $(this.el).find('input[name="end"]').val(),
-        cost: $(this.el).find('input[name="cost"]').val()
+        cost: $(this.el).find('input[name="cost"]').val(),
+        visible: typeof($(this.el).find('input[name="visible"]:checked').val()) != 'undefined'
       });
-      this.render();
+  },
+
+  remove: function(event) {
+      event.stopPropagation();
+      event.preventDefault();
+      this.options.model.destroy();
+  },
+
+  destroy: function() {
+      console.log('dest')
+      $(this.el).remove();
   }
 
 });
@@ -149,6 +179,10 @@ App.Views.ProjectForm = Backbone.View.extend({
         '<input name="cost" value="'+p.get('cost')+'"/>' +
       '</p>' +
       '<p>' +
+        '<label for="visible">visible</label>' +
+        '<input type="checkbox" name="visible"' + (p.get('visible') ? ' checked' : '') +'/>' +
+      '</p>' +
+      '<p>' +
         '<input type="submit" value="add"/>' +
       '</p>'
       $(this.el).html(tpl);
@@ -162,9 +196,10 @@ App.Views.ProjectForm = Backbone.View.extend({
         name: $(this.el).find('input[name="name"]').val(),
         start: $(this.el).find('input[name="start"]').val(),
         end: $(this.el).find('input[name="end"]').val(),
-        cost: $(this.el).find('input[name="cost"]').val()
+        cost: $(this.el).find('input[name="cost"]').val(),
+        visible: typeof($(this.el).find('input[name="visible"]:checked').val()) != 'undefined'
       });
-      this.options.collection.add(this.options.model);
+      this.options.collection.create(this.options.model);
       this.options.model = new App.Models.Project();
       this.render();
   }
@@ -200,8 +235,9 @@ App.Views.Graph = Backbone.View.extend({
   tagName: 'div',
 
   initialize: function() {
-    _.bindAll(this, 'render', 'addProject', 'changeProject');
+    _.bindAll(this, 'render', 'addProject', 'changeProject', 'refresh');
     this.options.collection.bind('add', this.addProject);
+    this.options.collection.bind('reset', this.refresh);
     this.data = [];
     /* Sizing and scales. */
     var w = 400,
@@ -247,7 +283,9 @@ App.Views.Graph = Backbone.View.extend({
 
   addProject: function(project) {
       project.bind('change', this.changeProject);
-      this.data.push(project.toData());
+      if(project.get('visible')) {
+          this.data.push(project.toData());
+      }
       this.render();
   },
 
@@ -255,7 +293,9 @@ App.Views.Graph = Backbone.View.extend({
       this.data.splice(0, this.data.length);
       var self = this;
       this.options.collection.each( function(project) {
-          self.data.push(project.toData());
+          if(project.get('visible')) {
+              self.data.push(project.toData());
+          }
       });
       this.render();
   },
@@ -263,9 +303,15 @@ App.Views.Graph = Backbone.View.extend({
   render: function() {
       this.vis.render();
       return this;
+  },
+
+  refresh: function() {
+      this.changeProject();
+      this.render();
   }
 });
 
 var app = new App.Views.Seer($('#seer'));
 app.render();
+app.projects.fetch();
 });

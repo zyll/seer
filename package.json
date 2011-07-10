@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "mongoose": "",
+    "express": "",
+    "connect": "",
+    "jade": "",
+    "futures": "",
+    "connect-form": ""
+  },
+  "directories": {
+    "static": "./public"
+  },
+  "name": "seer",
+  "author": "Zyll <contact@af83.com>",
+  "version": "0.0.1",
+  "main": "./app.js",
+  "description": "Visualize your future charge."
+}
