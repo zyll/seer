@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
-var lastDay = 60;
-var maxNbDev = 15;
+var lastDay = 150;
+var maxNbDev = 20;
 
 var App = {
     Collections: {},
@@ -238,10 +238,11 @@ App.Views.Graph = Backbone.View.extend({
     _.bindAll(this, 'render', 'addProject', 'changeProject', 'refresh');
     this.options.collection.bind('add', this.addProject);
     this.options.collection.bind('reset', this.refresh);
+    this.options.collection.bind('destroy', this.refresh);
     this.data = [];
     /* Sizing and scales. */
-    var w = 400,
-        h = 200,
+    var w = 800,
+        h = 400,
         x = pv.Scale.linear(0, lastDay).range(0, w),
         y = pv.Scale.linear(0, maxNbDev).range(0, h);
 
