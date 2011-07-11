@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
 var lastDay = 150;
 var maxNbDev = 20;
 
@@ -20,17 +19,23 @@ App.Models.Project = Backbone.Model.extend({
 
     defaults: {
         name: 'name',
-        start: 0,
-        end: 0,
-        cost: 0,
+        start: Date.today().toString(),
+        end: Date.today().add({months: 1}).toString(),
+        cost: 1,
         visible: true
     },
     
 
     toData: function() {
         var data = [];
+        
+        var start = - new TimeSpan(Date.today() - new Date(this.get('start'))).getDays();
+        console.log(start);
+        var end   = - new TimeSpan(Date.today() - new Date(this.get('end'))).getDays();
+        console.log(end);
+
         for(var i = 0; i <= lastDay; i++) {
-            var y = ((i <= this.get('start')) || (i >= this.get('end'))) ? 0 : this.get('cost');
+            var y = ((i <= start || (i >= end))) ? 0 : this.get('cost');
             data.push({x: i, y: y});
         }
         return data;

@@ -13,8 +13,8 @@ var Schema = mongoose.Schema
 var Project = mongoose.model('ProjectSchema', new Schema({
     id     : ObjectId
   , name   : String
-  , start  : Number
-  , end    : Number
+  , start  : Date
+  , end    : Date
   , cost   : Number
   , visible: Boolean
 }));
