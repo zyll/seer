@@ -1,6 +1,8 @@
 $(document).ready(function() {
-var lastDay = 150;
-var maxNbDev = 20;
+var lastDay = 150
+  , maxNbDev = 20
+  , DATE_FORMAT_UI = 'mm/dd/yy'
+  , DATE_FORMAT_DJS = 'mm/dd/yyyy';
 
 var App = {
     Collections: {},
@@ -24,7 +26,15 @@ App.Models.Project = Backbone.Model.extend({
         cost: 1,
         visible: true
     },
-    
+
+    // convenient method to human readable date (and datepicker)
+    toHumanDate: function(bound) {
+        return $.datepicker.formatDate(DATE_FORMAT_UI, new Date(this.get(bound)));
+    },
+
+    fromHumanDate: function(value) {
+        return Date.parseExact(value, DATE_FORMAT_DJS).toString();
+    },
 
     toData: function() {
         var data = [];
@@ -84,13 +94,12 @@ App.Views.ProjectRow = Backbone.View.extend({
   },  
 
   render: function() {
-      console.log('me')
     this.delegateEvents({
          'click a.remove': 'remove',
          'click div': 'renderUpdate'
     });
     var p = this.options.model;
-    $(this.el).html('<div> name : '+p.get('name')+'<div> start at : '+p.get('start')+'</div><div> end at : '+p.get('end')+'</div><div>cost : '+p.get('cost')+'</div><a href="#" class="remove">remove</a>');
+    $(this.el).html('<div> name : '+p.get('name')+'<div> start at : '+p.toHumanDate('start')+'</div><div> end at : '+p.toHumanDate('end')+'</div><div>cost : '+p.get('cost')+'</div><a href="#" class="remove">remove</a>');
     return this;
   },
 
@@ -105,11 +114,11 @@ App.Views.ProjectRow = Backbone.View.extend({
       '<p>' +
       '<p>' +
         '<label for="start">start at</label>' +
-        '<input name="start" value="'+p.get('start')+'"/>' +
+        '<input name="start" value="' + p.toHumanDate('start')+'" class="start"/>' +
       '<p>' +
       '<p>' +
         '<label for="end at">end at</label>' +
-        '<input name="end" value="'+p.get('end')+'"/>' +
+        '<input name="end" value="'+p.toHumanDate('end')+'" class="end"/>' +
       '</p>' +
       '<p>' +
         '<label for="end at">dev nb</label>' +
@@ -123,6 +132,7 @@ App.Views.ProjectRow = Backbone.View.extend({
         '<input type="submit" value="save"/>' +
       '</p></form>'
       $(this.el).html(tpl);
+      selectDateRange(this.el);
 
       return this;
   },
@@ -131,8 +141,8 @@ App.Views.ProjectRow = Backbone.View.extend({
       event.preventDefault();
       this.options.model.save({
         name: $(this.el).find('input[name="name"]').val(),
-        start: $(this.el).find('input[name="start"]').val(),
-        end: $(this.el).find('input[name="end"]').val(),
+        start: this.options.model.fromHumanDate($(this.el).find('input[name="start"]').val()),
+        end: this.options.model.fromHumanDate($(this.el).find('input[name="end"]').val()),
         cost: $(this.el).find('input[name="cost"]').val(),
         visible: typeof($(this.el).find('input[name="visible"]:checked').val()) != 'undefined'
       });
@@ -173,11 +183,11 @@ App.Views.ProjectForm = Backbone.View.extend({
       '</p>' +
       '<p>' +
         '<label for="start">start at</label>' +
-        '<input name="start" value="'+p.get('start')+'"/>' +
+        '<input name="start" value="'+p.toHumanDate('start')+'" class="start"/>' +
       '<p>' +
       '<p>' +
         '<label for="end at">end at</label>' +
-        '<input name="end" value="'+p.get('end')+'"/>' +
+        '<input name="end" value="'+p.toHumanDate('end')+'" class="end"/>' +
       '</p>' +
       '<p>' +
         '<label for="end at">dev nb</label>' +
@@ -189,8 +199,9 @@ App.Views.ProjectForm = Backbone.View.extend({
       '</p>' +
       '<p>' +
         '<input type="submit" value="add"/>' +
-      '</p>'
+      '</p>';
       $(this.el).html(tpl);
+      selectDateRange(this.el);
 
       return this;
   },
@@ -199,8 +210,8 @@ App.Views.ProjectForm = Backbone.View.extend({
       event.preventDefault();
       this.options.model.set({
         name: $(this.el).find('input[name="name"]').val(),
-        start: $(this.el).find('input[name="start"]').val(),
-        end: $(this.el).find('input[name="end"]').val(),
+        start: this.options.model.fromHumanDate($(this.el).find('input[name="start"]').val()),
+        end: this.options.model.fromHumanDate($(this.el).find('input[name="end"]').val()),
         cost: $(this.el).find('input[name="cost"]').val(),
         visible: typeof($(this.el).find('input[name="visible"]:checked').val()) != 'undefined'
       });
@@ -316,6 +327,24 @@ App.Views.Graph = Backbone.View.extend({
       this.render();
   }
 });
+
+var selectDateRange = function(el) {
+    console.log('me')
+    var dates = $( $(el).find('.start, .end') ).datepicker({
+        defaultDate: "+1w",
+        changeMonth: true,
+        numberOfMonths: 3,
+        onSelect: function( selectedDate ) {
+            var option = $(this).hasClass('start') ? "minDate" : "maxDate",
+            instance = $( this ).data( "datepicker" ),
+            date = $.datepicker.parseDate(
+                instance.settings.dateFormat ||
+                    $.datepicker._defaults.dateFormat,
+                    selectedDate, instance.settings );
+                    dates.not( this ).datepicker( "option", option, date );
+        }
+    });
+}
 
 var app = new App.Views.Seer($('#seer'));
 app.render();
