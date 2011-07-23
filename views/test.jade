@@ -4,9 +4,7 @@ html(lang="en")
     meta(http-equiv="Content-Type", content="text/html; charset=utf-8")
     title Seer Jasmine suite
     link(type="text/css", href="jasmine/jasmine.css", rel="Stylesheet", media="screen")
-    script(type="text/javascript", src='/jasmine/jasmine.js')
-    script(type="text/javascript", src='/jasmine/jasmine-html.js')
-    script(type="text/javascript", src='/jasmine/json2.js')
+    !=partial('assets', {assets: testassets})
     script
       var jsApiReporter;
       (function() {

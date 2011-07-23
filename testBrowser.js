@@ -3,36 +3,32 @@ var http    = require('http')
   , fs      = require('fs')
   , jade    = require('jade')
   , express = require('express')
-  , appAssets  = {
-      js: require('./asset/js')
-  };
-  require('./asset/test_boot').forEach(function(it) {
-      AppAssets.js.push(it)
-  });
+  , appAssets  = {js: require('./asset/js')}
+  , testAssets = {js: require('./asset/test_boot')}
 
-
-var server = express.createServer(
-    express.static(__dirname + '/public')
-  , express.static(__dirname + '/test/browser')
-  , express.router(function(app) {
-      app.get('*', function(req, res, next) {
-          fs.readdir(__dirname + '/test/browser', function(err, files) {
-              var testsfiles = [];
-              files.forEach(function(file, index) {
-                var tmp = file.split('.')
-                tmp.pop();
-                testsfiles.push(tmp.join('.'))
-              })
-              res.render('test', {
-                  layout: false,
-                  locals: {
-                      appassets: appAssets,
-                      tests: testsfiles
-                  }});
-          })
-      });
-    })
-)
+  , server = express.createServer(
+        express.static(__dirname + '/public')
+      , express.static(__dirname + '/test/browser')
+      , express.router(function(app) {
+           app.get('*', function(req, res, next) {
+               fs.readdir(__dirname + '/test/browser', function(err, files) {
+                   var testsFiles = [];
+                   files.forEach(function(file) {
+                       var tmp = file.split('.')
+                       tmp.pop();
+                       testsFiles.push(tmp.join('.'))
+                   })
+                   res.render('test', {
+                       layout: false,
+                       locals: {
+                           testassets: testAssets,
+                           appassets: appAssets,
+                           tests: testsFiles
+                       }});
+               })
+           });
+      })
+  )
 
 server.set('view engine', 'jade')
 
