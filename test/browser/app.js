@@ -19,7 +19,6 @@ describe('Backbone Models should translate _id to id', function() {
     });
 });
 
-
 describe('Application should be able to bootstrap using the Seer View (yep, no Route for now)', function() {
     it('should render', function() {
         expect(App.Views.Seer).toBeDefined();

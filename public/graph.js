@@ -39,9 +39,7 @@ App.Models.Project = Backbone.Model.extend({
         var data = [];
         
         var start = - new TimeSpan(Date.today() - new Date(this.get('start'))).getDays();
-        console.log(start);
         var end   = - new TimeSpan(Date.today() - new Date(this.get('end'))).getDays();
-        console.log(end);
 
         for(var i = 0; i <= lastDay; i++) {
             var y = ((i <= start || (i >= end))) ? 0 : this.get('cost');
@@ -154,7 +152,6 @@ App.Views.ProjectRow = Backbone.View.extend({
   },
 
   destroy: function() {
-      console.log('dest')
       $(this.el).remove();
   }
 
@@ -328,7 +325,6 @@ App.Views.Graph = Backbone.View.extend({
 });
 
 var selectDateRange = function(el) {
-    console.log('me')
     var dates = $( $(el).find('.start, .end') ).datepicker({
         defaultDate: "+1w",
         changeMonth: true,

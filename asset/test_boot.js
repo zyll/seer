@@ -3,4 +3,5 @@ module.exports = [
   , 'jasmine/jasmine-html'
   , 'jasmine/json2'
   , 'jasmine/jasmine-jquery'
+  , 'jasmine/sinon'
 ]
