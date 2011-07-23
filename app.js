@@ -3,7 +3,13 @@ var http    = require('http')
   , jade    = require('jade')
   , express = require('express')
   , mongoose = require('mongoose')
-  , sys = require('sys');
+  , sys = require('sys')
+  , assets = {
+      js: require('./asset/js')
+  };
+  require('./asset/app_boot').forEach(function(it) {
+      assets.js.push(it)
+  });
 
 mongoose.connect('mongodb://localhost/testSeer');
 
@@ -73,7 +79,12 @@ var server = express.createServer(
           });
       });
 
+      app.get('*', function(req, res, next) {
+          res.render('index.jade', {layout: false, locals: {assets: assets}})
+      });
+
     })
+
 )
 
 server.set('view engine', 'jade')

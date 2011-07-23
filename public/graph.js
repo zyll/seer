@@ -1,4 +1,3 @@
-$(document).ready(function() {
 var lastDay = 150
   , maxNbDev = 20
   , DATE_FORMAT_UI = 'mm/dd/yy'
@@ -345,8 +344,3 @@ var selectDateRange = function(el) {
         }
     });
 }
-
-var app = new App.Views.Seer($('#seer'));
-app.render();
-app.projects.fetch();
-});
