@@ -10,7 +10,7 @@ var http    = require('http')
         express.static(__dirname + '/public')
       , express.static(__dirname + '/test/browser')
       , express.router(function(app) {
-           app.get('*', function(req, res, next) {
+           app.get('/', function(req, res, next) {
                fs.readdir(__dirname + '/test/browser', function(err, files) {
                    var testsFiles = [];
                    files.forEach(function(file) {
