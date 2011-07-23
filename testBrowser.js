@@ -3,10 +3,25 @@ var http    = require('http')
   , fs      = require('fs')
   , jade    = require('jade')
   , express = require('express')
-  , appAssets  = {js: require('./asset/js')}
-  , testAssets = {js: require('./asset/test_boot')}
+  , assetsAll = {
+      app: {js: require('./asset/js')}
+    , tests: {js: require('./asset/test_boot')}
+  }
 
-  , server = express.createServer(
+  // watch on asset to refresh on change
+  ;(function(lookedFiles) {
+      lookedFiles.forEach(function(looked) {
+          fs.watchFile(__dirname + looked.file + '.js', function (curr, prev) {
+              delete require.cache[require.resolve('.' + looked.file)]
+              assetsAll[looked.asset]  = {js: require('.' + looked.file)}
+          })
+      })
+  }) ([
+      {file: '/asset/js', asset: 'app'},
+      {file: '/asset/test_boot', asset: 'tests'}
+  ])
+
+ var server = express.createServer(
         express.static(__dirname + '/public')
       , express.static(__dirname + '/test/browser')
       , express.router(function(app) {
@@ -21,8 +36,8 @@ var http    = require('http')
                    res.render('test', {
                        layout: false,
                        locals: {
-                           testassets: testAssets,
-                           appassets: appAssets,
+                           testassets: assetsAll.tests,
+                           appassets: assetsAll.app,
                            tests: testsFiles
                        }});
                })
