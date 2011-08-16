@@ -3,7 +3,7 @@ var http    = require('http')
   , jade    = require('jade')
   , express = require('express')
   , mongoose = require('mongoose')
-  , sys = require('sys')
+  , sys = require('util')
   , assets = {
       js: require('./asset/js')
   };
@@ -91,7 +91,7 @@ server.set('view engine', 'jade')
 
 server.error(function(err, req, res) {
     console.log(err.stack)
-    res.send('500 Oups'+err, {status: 500})
+    res.send(err.stack, 500)
 });
 
 server.listen(3011, function() {console.log('Listening on http://127.0.0.1:3011')});
